@@ -48,7 +48,7 @@ export async function downloadPngRange(baseUrl, documentId, startPage = 0, endPa
   const zip = new JSZip();
   const imageBlobs = [];
 
-  for (let currPage = 0; currPage < endPage; currPage++) {
+  for (let currPage = startPage; currPage < endPage; currPage++) {
     const blob = await downloadPng(baseUrl, documentId, currPage, opts)
     imageBlobs.push(blob);
 
