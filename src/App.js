@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react";
 import './App.scss';
 import ControlCard from "./components/ControlCard";
-import DownloadStatusCard from "./components/DownloadStatusCard";
 import { downloadPngRange } from "./services/DownloadPngService";
 
 function App() {
@@ -9,14 +8,19 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [downloadLink, setDownloadLink] = useState("");
+  const [progress, setProgress] = useState({ value: 0, fileName: "" });
+
+  const handleProgress = useCallback((value, fileName) => {
+    setProgress({ value, fileName });
+  }, []);
 
   const handleJobStartClick = useCallback((baseUrl, documentId, startPage, endPage, opts) => {
     setIsLoading(true);
 
-    downloadPngRange(baseUrl, documentId, startPage, endPage, opts)
+    downloadPngRange(baseUrl, documentId, startPage, endPage, opts, handleProgress)
       .then(downloadLink => setDownloadLink(downloadLink))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [handleProgress]);
 
   return (
     <div className="App">
@@ -30,9 +34,7 @@ function App() {
           onChange={e => setUrl(e.target.value)}
         />
 
-        <ControlCard url={url} onJobStartClick={handleJobStartClick} />
-
-        {downloadLink && <DownloadStatusCard downloadLink={downloadLink} />}
+        <ControlCard url={url} onJobStartClick={handleJobStartClick} progress={progress.value} progressFileName={progress.fileName} />
       </div>
     </div>
   );

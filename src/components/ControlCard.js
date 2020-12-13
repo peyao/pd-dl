@@ -5,7 +5,7 @@ import "./ControlCard.scss";
 
 const stripPageNumRegex = /(.*)\/[0-9]+$/;
 
-function ControlCard({ url, onJobStartClick }) {
+function ControlCard({ url, onJobStartClick, progress, progressFileName }) {
 
   const [baseUrl, setBaseUrl] = useState();
   const [documentId, setDocumentId] = useState();
@@ -15,6 +15,7 @@ function ControlCard({ url, onJobStartClick }) {
   const [startPage, setStartPage] = useState(0);
   const [endPage, setEndPage] = useState(1);
   const [lastPageLink, setLastPageLink] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -46,9 +47,16 @@ function ControlCard({ url, onJobStartClick }) {
     }
   }, [baseUrl, endPage, documentId, contentType]);
 
+  useEffect(() => {
+    setIsLoading(progress > 0 && progress < 100);
+  }, [progress]);
+
   const handleJobStartClick = useCallback(() => {
+    if (isLoading) return;
     onJobStartClick(baseUrl, documentId, startPage, endPage, { scale, contentType });
-  }, [baseUrl, documentId, contentType, startPage, endPage]);
+  }, [baseUrl, documentId, contentType, startPage, endPage, isLoading]);
+
+  if (!url) return null;
 
   return (
     <div className="control-card card">
@@ -61,16 +69,16 @@ function ControlCard({ url, onJobStartClick }) {
         <table className="table">
           <tbody>
             <tr>
+              <td>BaseUrl</td>
+              <td>{baseUrl}</td>
+            </tr>
+            <tr>
               <td>DocumentId</td>
               <td>{documentId}</td>
             </tr>
             <tr>
               <td>ContentType</td>
               <td>{contentType}</td>
-            </tr>
-            <tr>
-              <td>BaseUrl</td>
-              <td>{baseUrl}</td>
             </tr>
             <tr>
               <td>StartPage</td>
@@ -85,16 +93,24 @@ function ControlCard({ url, onJobStartClick }) {
               </td>
             </tr>
             <tr>
-              <td>Final Page Test</td>
+              <td>EndPage Link</td>
               <td>
                 <a href={lastPageLink} target="_blank" rel="noreferrer noopener">{lastPageLink}</a>
               </td>
             </tr>
           </tbody>
         </table>
+
+        <progress className="progress is-primary" value={progress} max={100}>{progress}%</progress>
       </div>
       <footer className="card-footer">
-        <a href="#" className="card-footer-item" onClick={handleJobStartClick}>Start Job</a>
+        <a
+          className="card-footer-item button is-link"
+          onClick={handleJobStartClick}
+          disabled={isLoading}
+        >
+          {progress === 0 || progress === 100 ? "Start Job" : progressFileName}
+        </a>
       </footer>
     </div>
   );
